@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Calculator } from "@/components/calculator";
 import { FaqSection, type FaqItem } from "@/components/faq-section";
 import { ALCOHOL_LABEL, ALCOHOL_RATE_PER_L, ALCOHOL_TYPES, RULES_AS_OF, SOURCES } from "@/lib/customs";
+import { API_PAUSED_NOTE, isGithubPages, pagesSiteUrl, withBasePath } from "@/lib/hosting";
 import { EXAMPLE_SHARED, PUBLIC_URL, resultPath } from "@/lib/share";
 
 const title = "Japan customs duty-free allowance calculator & checker 2026";
@@ -21,7 +22,7 @@ const webAppLd = {
   "@type": "WebApplication",
   name: "Japan Customs Allowance Checker",
   alternateName: ["Japan duty-free allowance calculator", "日本 免税範囲 チェッカー", "Japan customs duty calculator for travelers"],
-  url: PUBLIC_URL,
+  url: isGithubPages ? pagesSiteUrl(PUBLIC_URL) : PUBLIC_URL,
   applicationCategory: "TravelApplication",
   operatingSystem: "Any",
   inLanguage: ["en", "ja"],
@@ -94,7 +95,9 @@ const faq: FaqItem[] = [
   },
   {
     q: "Is there a free Japan customs allowance API for AI agents?",
-    a: `Yes. Free, no key, CORS open: GET ${PUBLIC_URL}/api/check?alcoholBottles=4&alcoholType=whisky&cigarettes=200&goods=120000,130000 returns per-category within/over, the excess, the estimated simplified duty with a tax-type breakdown, red or green channel and the cash declaration flag. Full rules at ${PUBLIC_URL}/api/rules, OpenAPI at ${PUBLIC_URL}/openapi.json, and the japan_customs_allowance_check tool on https://free-agent-tools.vercel.app/mcp.`,
+    a: isGithubPages
+      ? API_PAUSED_NOTE
+      : `Yes. Free, no key, CORS open: GET ${PUBLIC_URL}/api/check?alcoholBottles=4&alcoholType=whisky&cigarettes=200&goods=120000,130000 returns per-category within/over, the excess, the estimated simplified duty with a tax-type breakdown, red or green channel and the cash declaration flag. Full rules at ${PUBLIC_URL}/api/rules, OpenAPI at ${PUBLIC_URL}/openapi.json, and the japan_customs_allowance_check tool on https://free-agent-tools.vercel.app/mcp.`,
   },
 ];
 
@@ -152,7 +155,7 @@ export default function HomePage() {
         </div>
         <p className="mt-3 text-sm text-muted">
           Simplified duty on the excess: {ALCOHOL_TYPES.filter((t) => !["brandy", "gin", "vodka", "beer", "other"].includes(t)).map((t) => `${ALCOHOL_LABEL[t].replace(" (shochu etc.)", "")} ¥${ALCOHOL_RATE_PER_L[t]}/L`).join(" · ")} · cigarettes and heat-not-burn sticks ¥15 each · capsules ¥50 · other goods 15% of 60% of the price. Example:{" "}
-          <a className="underline underline-offset-2 hover:text-foreground" href={resultPath(EXAMPLE_SHARED)}>
+          <a className="underline underline-offset-2 hover:text-foreground" href={isGithubPages ? withBasePath("/") : resultPath(EXAMPLE_SHARED)}>
             4 bottles of whisky, a carton, ¥120,000 + ¥130,000 of shopping → about ¥11,400
           </a>
           .
@@ -161,18 +164,28 @@ export default function HomePage() {
 
       <section className="mt-16 max-w-3xl">
         <h2 className="font-display text-3xl tracking-tight sm:text-4xl">Agent-callable JSON API</h2>
-        <p className="mt-4 text-sm leading-relaxed text-muted sm:text-base">
-          Free, no key, CORS open.{" "}
-          <code className="rounded bg-panel px-1.5 py-0.5 font-mono text-xs text-foreground">GET {PUBLIC_URL}/api/check?alcoholBottles=4&amp;alcoholType=whisky&amp;cigarettes=200&amp;goods=120000,130000</code> or POST JSON with goods as{" "}
-          <code className="font-mono text-xs">[{"{"}valueJPY, quantity, dutyFreeTariff{"}"}]</code>. Also{" "}
-          <a className="underline underline-offset-2 hover:text-foreground" href="/api/rules">/api/rules</a>,{" "}
-          <a className="underline underline-offset-2 hover:text-foreground" href="/openapi.json">/openapi.json</a>,{" "}
-          <a className="underline underline-offset-2 hover:text-foreground" href="/llms.txt">/llms.txt</a>, and the MCP tool on{" "}
-          <a className="underline underline-offset-2 hover:text-foreground" href="https://free-agent-tools.vercel.app/" target="_blank" rel="noopener noreferrer">
-            free-agent-tools
-          </a>
-          .
-        </p>
+        {isGithubPages ? (
+          <p className="mt-4 text-sm leading-relaxed text-muted sm:text-base">
+            {API_PAUSED_NOTE}{" "}
+            <a className="underline underline-offset-2 hover:text-foreground" href={withBasePath("/llms.txt")}>
+              llms.txt
+            </a>{" "}
+            describes the checker and the API contract.
+          </p>
+        ) : (
+          <p className="mt-4 text-sm leading-relaxed text-muted sm:text-base">
+            Free, no key, CORS open.{" "}
+            <code className="rounded bg-panel px-1.5 py-0.5 font-mono text-xs text-foreground">GET {PUBLIC_URL}/api/check?alcoholBottles=4&amp;alcoholType=whisky&amp;cigarettes=200&amp;goods=120000,130000</code> or POST JSON with goods as{" "}
+            <code className="font-mono text-xs">[{"{"}valueJPY, quantity, dutyFreeTariff{"}"}]</code>. Also{" "}
+            <a className="underline underline-offset-2 hover:text-foreground" href="/api/rules">/api/rules</a>,{" "}
+            <a className="underline underline-offset-2 hover:text-foreground" href="/openapi.json">/openapi.json</a>,{" "}
+            <a className="underline underline-offset-2 hover:text-foreground" href="/llms.txt">/llms.txt</a>, and the MCP tool on{" "}
+            <a className="underline underline-offset-2 hover:text-foreground" href="https://free-agent-tools.vercel.app/" target="_blank" rel="noopener noreferrer">
+              free-agent-tools
+            </a>
+            .
+          </p>
+        )}
         <p className="mt-3 text-xs text-muted">
           Official sources:{" "}
           {SOURCES.slice(0, 5).map((s, i) => (
