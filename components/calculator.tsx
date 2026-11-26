@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CardDisclaimer } from "@/components/card-disclaimer";
 import { ShareBar } from "@/components/share-bar";
 import { ALCOHOL_LABEL, ALCOHOL_TYPES, RuleInputError, checkAllowance, type AlcoholType, type CheckInput } from "@/lib/customs";
+import { isGithubPages, pagesSiteUrl } from "@/lib/hosting";
 import { parseCheckInput, toQuery } from "@/lib/parse";
 import { EXAMPLE_SHARED, PUBLIC_URL, overText, yen } from "@/lib/share";
 
@@ -71,7 +72,7 @@ export function Calculator({ initial }: { initial?: CheckInput }) {
     error = e instanceof RuleInputError ? "Enter what you are bringing into Japan." : e instanceof Error ? e.message : "Check the numbers.";
   }
   const path = parsed && result ? `/r?${toQuery(parsed)}` : "/";
-  const shareUrl = `${PUBLIC_URL}${path}`;
+  const shareUrl = isGithubPages ? `${pagesSiteUrl(PUBLIC_URL)}/` : `${PUBLIC_URL}${path}`;
   const setRow = (i: number, patch: Partial<Row>) => setRows(rows.map((r, j) => (j === i ? { ...r, ...patch } : r)));
 
 
@@ -241,12 +242,18 @@ export function Calculator({ initial }: { initial?: CheckInput }) {
                 ))}
               </ul>
               <div className="mt-6 border-t border-line pt-4" data-testid="share-result">
-                <p className="text-xs text-muted">Share this result. The link carries only these numbers; nothing is stored.</p>
+                <p className="text-xs text-muted">
+                  {isGithubPages
+                    ? "Share the checker. A link to this exact result returns when hosting is back."
+                    : "Share this result. The link carries only these numbers; nothing is stored."}
+                </p>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <ShareBar url={shareUrl} text={result.withinAllowance ? "My Japan customs check: within the duty-free allowance. Free checker:" : `My Japan customs check: about ${yen(result.estimatedSimplifiedDutyJPY)} duty on the excess. Free checker:`} />
-                  <a href={path} className="text-sm text-muted underline underline-offset-2 hover:text-foreground">
-                    Open result page
-                  </a>
+                  {isGithubPages ? null : (
+                    <a href={path} className="text-sm text-muted underline underline-offset-2 hover:text-foreground">
+                      Open result page
+                    </a>
+                  )}
                 </div>
               </div>
             </>

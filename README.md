@@ -2,7 +2,8 @@
 
 Free, unofficial checker for **Japan Customs' duty-free allowance** for travelers entering Japan: alcohol, tobacco, perfume and ¥200,000 of other goods per person, with an estimated simplified duty in yen and the cash-over-¥1,000,000 declaration rule.
 
-- Live: https://japan-customs-allowance.vercel.app
+- Full app and API (Vercel): https://japan-customs-allowance.vercel.app
+- Checker (GitHub Pages): https://akiba-labs.github.io/japan-customs-allowance/
 - API: `GET/POST /api/check`, `GET/POST /api/rules`
 - Agent docs: `/llms.txt`, `/openapi.json`, `/.well-known/ai-plugin.json`
 - MCP tool: `japan_customs_allowance_check` on https://free-agent-tools.vercel.app/mcp
@@ -44,6 +45,11 @@ Snapshots of the official pages: `money-research/customs-allowance-sources/` on 
 npm ci
 npm test
 npm run build
+npm run build:pages
 ```
+
+`npm run build` is the Vercel app (checker, JSON API, share pages). `npm run build:pages` writes a static `out/` for GitHub Pages and checks that internal links and assets resolve under `/japan-customs-allowance`. Server routes stay in the repo; the Pages script only moves them aside for that build.
+
+GitHub settings: **Settings → Pages → Build and deployment → Source: GitHub Actions**. Pushes to `main` deploy with `.github/workflows/pages.yml`. The copy-paste steps for the other tool repos are at the top of `scripts/build-pages.mjs`.
 
 MIT license.
